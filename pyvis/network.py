@@ -550,6 +550,31 @@ class Network(object):
         assert(node in self.node_ids), "error: %s node not in network" % node
         return self.get_adj_list()[node]
 
+
+    def from_nx_all(self, nx_graph):
+        """
+        This method takes an exisitng Networkx graph and translates
+        it to a PyVis graph format that can be accepted by the VisJs
+        API in the Jinja2 template. This operation is done in place. 
+        
+        *Note that this is a modified version which adds all nodes and edges,
+        whereas for the previous version if edges were present, only connected nodes were added.
+
+        :param nx_graph: The Networkx graph object that is to be translated.
+        :type nx_graph: networkx.Graph instance
+        >>> nx_graph = Networkx.cycle_graph()
+        >>> nt = Network("500px", "500px")
+        # populates the nodes and edges data structures
+        >>> nt.from_nx(nx_graph)
+        >>> nt.show("nx.html")
+        """
+        assert(isinstance(nx_graph, nx.Graph))
+        edges = nx_graph.edges(data=True)
+        nodes = nx_graph.nodes()
+        self.add_nodes(nodes)
+        for e in edges:
+            self.add_edge(e[0], e[1])
+    
     def from_nx(self, nx_graph):
         """
         This method takes an exisitng Networkx graph and translates
