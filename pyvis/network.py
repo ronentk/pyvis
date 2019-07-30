@@ -406,6 +406,22 @@ class Network(object):
 
         :type name_html: str
         """
+        self.render_html(name, notebook)
+
+        with open(name, "w+") as out:
+            out.write(self.html)
+
+        if notebook:
+            return IFrame(name, width=self.width, height=self.height)
+    
+    def render_html(self, name, notebook=False):
+        """
+        This method gets the data structures supporting the nodes, edges,
+        and options and renders the template to contain the HTML holding
+        the visualization.
+
+        :type name_html: str
+        """
         check_html(name)
         # here, check if an href is present in the hover data
         use_link_template = False
@@ -440,11 +456,9 @@ class Network(object):
                                     conf=self.conf,
                                     tooltip_link=use_link_template)
 
-        with open(name, "w+") as out:
-            out.write(self.html)
 
-        if notebook:
-            return IFrame(name, width=self.width, height=self.height)
+        return self.html
+
 
     def show(self, name):
         """
@@ -557,12 +571,17 @@ class Network(object):
         it to a PyVis graph format that can be accepted by the VisJs
         API in the Jinja2 template. This operation is done in place. 
         
-        *Note that this is a modified version which adds all nodes and edges,
+        Notes:
+        - This is a modified version which adds all nodes and edges,
         whereas for the previous version if edges were present, only connected nodes were added.
+        - Node and edge visualization options can be passed directly through the networkx.Graph
+        instance, by setting the respective options in a dictionary with key 'pyvis_options'.
 
         :param nx_graph: The Networkx graph object that is to be translated.
         :type nx_graph: networkx.Graph instance
         >>> nx_graph = Networkx.cycle_graph()
+        >>> nx_graph.add_node("node_1", pyvis_options={"color":...})
+        # same applies for edges
         >>> nt = Network("500px", "500px")
         # populates the nodes and edges data structures
         >>> nt.from_nx(nx_graph)
@@ -570,10 +589,13 @@ class Network(object):
         """
         assert(isinstance(nx_graph, nx.Graph))
         edges = nx_graph.edges(data=True)
-        nodes = nx_graph.nodes()
-        self.add_nodes(nodes)
+        nodes = nx_graph.nodes(data=True)
+        for n, n_data in nodes:
+            options = n_data.get('pyvis_options', {})
+            self.add_node(n, label=n, **options)
         for e in edges:
-            self.add_edge(e[0], e[1])
+            options = e[2].get('pyvis_options', {})
+            self.add_edge(e[0], e[1], **options)
     
     def from_nx(self, nx_graph):
         """
