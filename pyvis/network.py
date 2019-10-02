@@ -622,6 +622,23 @@ class Network(object):
         else:
             self.add_nodes(nodes)
 
+    def to_nx_all(self):
+        """
+        This method translates the PyVis graph to a Networkx graph,
+        maintaining the node and edge attributes.
+
+        :returns: networkx.Graph instance
+        """
+        g = nx.Graph()
+        for node in self.nodes:
+            g.add_node(node['id'], **node)
+        for edge in self.edges:
+            from_node = edge.pop("from")
+            to_node = edge.pop("to")
+            g.add_edge(from_node, to_node, **edge)
+        return g
+
+    
     def get_nodes(self):
         """
         This method returns an iterable list of node ids
