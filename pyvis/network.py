@@ -460,7 +460,7 @@ class Network(object):
         return self.html
 
 
-    def show(self, name):
+    def show(self, name, open_browser=False):
         """
         Writes a static HTML file and saves it locally before opening.
 
@@ -472,7 +472,8 @@ class Network(object):
             return self.write_html(name, notebook=True)
         else:
             self.write_html(name)
-            webbrowser.open(name)
+            if open_browser:
+                webbrowser.open(name)
 
     def prep_notebook(self,
                       custom_template=False, custom_template_path=None):
